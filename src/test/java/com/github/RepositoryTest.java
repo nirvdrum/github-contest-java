@@ -1,7 +1,7 @@
 package com.github;
 
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
 import static org.testng.Assert.*;
 import static org.testng.Assert.assertEquals;
 
@@ -21,7 +21,7 @@ public class RepositoryTest
 {
   private Repository test_repo;
 
-  @BeforeTest
+  @BeforeMethod
   public void setUp()
   {
     this.test_repo = new Repository("1234", "user_a/yo", "2009-02-26");
