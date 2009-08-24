@@ -5,4 +5,11 @@
     <groupId>github_contest</groupId>
     <artifactId>github_contest</artifactId>
     <version>1.0</version>
+  <dependencies>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>1.4</version>
+    </dependency>
+  </dependencies>
 </project>
