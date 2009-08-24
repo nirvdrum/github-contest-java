@@ -1,5 +1,8 @@
 package com.github;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Created by IntelliJ IDEA.
  * User: nirvdrum
@@ -9,10 +12,12 @@ package com.github;
  */
 public class Watcher
 {
-    public final String id;
+  public final String id;
 
-    public Watcher(String id)
-    {
-        this.id = id;
-    }
+  public Set<Repository> repositories = new HashSet<Repository>();
+
+  public Watcher(final String id)
+  {
+    this.id = id;
+  }
 }
