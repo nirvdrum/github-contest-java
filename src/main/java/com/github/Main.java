@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Collection;
 import java.io.IOException;
 
 /**
@@ -24,16 +25,18 @@ public class Main
     final DataSet data_set = DataLoader.loadWatchings();
 
     // Perform cross-validation.
-    final List<DataSet> folds = data_set.stratify(10);
+    final List<DataSet> folds = data_set.stratify(1000);
     for (int i = 0; i < folds.size(); i++)
     {
+      log.info(String.format("Starting fold %d.", i + 1));
       final DataSet test_set = folds.remove(0);
       final DataSet training_set = DataSet.combine(folds);
 
-      log.info(String.format("Starting fold %d.", i + 1));
       log.info("Training");
-
       final NearestNeighbors knn = new NearestNeighbors(training_set);
+
+      log.info("Classifying");
+      final Map<String, Map<String, Collection<Float>>> evaluations = knn.evaluate(test_set);
 
       /*
       for (final Map.Entry<String, Watcher> mapping : test_set.getWatchers().entrySet())
