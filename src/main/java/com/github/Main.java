@@ -1,7 +1,8 @@
 package com.github;
 
+import org.apache.log4j.Logger;
+
 import java.util.Map;
-import java.util.Set;
 import java.util.List;
 import java.io.IOException;
 
@@ -16,10 +17,10 @@ public class Main
 {
   public static void main(String[] args) throws IOException
   {
+    final Logger log = Logger.getLogger(Main.class);
+
+    log.info("Loading data.");
     final Map<String, Repository> repositories = DataLoader.loadRepositories();
-
-
-    
     final DataSet data_set = DataLoader.loadWatchings();
 
     // Perform cross-validation.
@@ -29,15 +30,34 @@ public class Main
       final DataSet test_set = folds.remove(0);
       final DataSet training_set = DataSet.combine(folds);
 
+      log.info(String.format("Starting fold %d.", i + 1));
+      log.info("Training");
 
-      //final Map<Map<String, Watcher>, Map<String, Repository>> test_data = test_set.to_models();
-      //final Map<Map<String, Watcher>, Map<String, Repository>> training_data = training_set.to_models();
+      final NearestNeighbors knn = new NearestNeighbors(training_set);
 
+      /*
+      for (final Map.Entry<String, Watcher> mapping : test_set.getWatchers().entrySet())
+      {
+        System.out.println(mapping.getKey() + ":" + mapping.getValue());
+      }
+
+      for (final Map.Entry<String, Repository> mapping : test_set.getRepositories().entrySet())
+      {
+        System.out.println(mapping.getKey() + ":" + mapping.getValue());
+      }
+
+      for (final Map.Entry<String, Watcher> mapping : training_set.getWatchers().entrySet())
+      {
+        System.out.println(mapping.getKey() + ":" + mapping.getValue());
+      }
+
+      for (final Map.Entry<String, Repository> mapping : training_set.getRepositories().entrySet())
+      {
+        System.out.println(mapping.getKey() + ":" + mapping.getValue());
+      }
+      */
 
       folds.add(test_set);
     }
-
-    final DataSet training_set = folds.get(0);
-    final DataSet test_set = folds.get(1);
   }
 }

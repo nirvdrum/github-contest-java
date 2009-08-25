@@ -122,11 +122,6 @@ public class DataSet
 
     final DataSet dataSet = (DataSet) o;
 
-    if (watchings.size() != dataSet.watchings.size())
-    {
-      return false;
-    }
-
     if (watchings != null ? !watchings.equals(dataSet.watchings) : dataSet.watchings != null)
     {
       return false;

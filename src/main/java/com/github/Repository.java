@@ -126,7 +126,7 @@ public class Repository
     return false;
   }
 
-  private static Repository findRoot(final Repository repository)
+  protected static Repository findRoot(final Repository repository)
   {
     return repository.parent == null ? repository : findRoot(repository.parent);
   }
