@@ -3,8 +3,7 @@ package com.github;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.io.IOException;
 
 /**
@@ -45,50 +44,22 @@ public class DataLoaderTest
     assertEquals(DataLoader.loadRepositories(), expected);
   }
 
+  public void testLoadWatchings() throws IOException
+  {
+    final Watcher w1 = new Watcher("1");
+    final Watcher w2 = new Watcher("2");
+    final Watcher w3 = new Watcher("5");
+
+    final Repository r1 = new Repository("1234", "user_a", "yo", "2009-02-26");
+    final Repository r2 = new Repository("2345", "user_b", "hey", "2009-05-22");
+    final Repository r3 = new Repository("6790", "user_c", "blah", "2009-11-13");
+
+    final Set<Watching> expected = new HashSet<Watching>(Arrays.asList(new Watching(w1.id, r1.id), new Watching(w2.id, r2.id), new Watching(w3.id, r3.id), new Watching(w1.id, r2.id)));
+
+    assertEquals(DataLoader.loadWatchings().watchings, expected);
+  }
+
   /*
-   def test_load_watchings
-    expected_data_labels = ["user_id", "repo_id"]
-
-    expected_data_items = [
-            ["1", "1234"],
-            ["2", "2345"],
-            ["5", "6790"],
-            ["1", "2345"]
-    ]
-
-    expected_data_set = Ai4r::Data::DataSet.new(:data_labels => expected_data_labels, :data_items => expected_data_items)
-
-    data_set = DataLoader.load_watchings
-
-    assert_equal expected_data_labels, data_set.data_labels
-    assert_equal expected_data_items, data_set.data_items
-  end
-
-  def test_load_repos
-
-    a = Repository.new "1234", "user_a/blah", "2009-02-26"
-    b = Repository.new "2345", "user_b/yo", "2009-05-17"
-    c = Repository.new "6790", "user_c/yo", "2009-03-19"
-    d = Repository.new "8324", "user_d/hmm", "2009-04-16"
-
-    b.parent = c
-
-    w1 = Watcher.new("1")
-    a.watchers << w1
-    b.watchers << Watcher.new("2")
-    b.watchers << w1
-    c.watchers << Watcher.new("5")
-
-    expected = {
-            "1234" => a,
-            "2345" => b,
-            "6790" => c,
-            "8324" => d
-    }
-
-    assert_equal expected, DataLoader.load_repositories
-  end
-
   def test_load_predicting
 
     expected_data_labels = ["user_id"]
