@@ -1,6 +1,7 @@
 package com.github;
 
 import org.apache.log4j.Logger;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.util.*;
 import java.io.IOException;
@@ -274,26 +275,7 @@ public class NearestNeighbors
       }
     }
 
-    final List<Map.Entry<String, Collection<Integer>>> sorted = new ArrayList<Map.Entry<String, Collection<Integer>>>(related_region_counts.entrySet());
-    Collections.sort(sorted, new Comparator<Map.Entry<String, Collection<Integer>>>()
-    {
-      public int compare(final Map.Entry<String, Collection<Integer>> first, final Map.Entry<String, Collection<Integer>> second)
-      {
-        float firstAverage = mean(first.getValue());
-        float secondAverage = mean(second.getValue());
-
-        if (secondAverage > firstAverage)
-        {
-          return 1;
-        }
-        else if (firstAverage < secondAverage)
-        {
-          return -1;
-        }
-
-        return 0;
-      }
-    });
+    final List<Map.Entry<String, Collection<Integer>>> sorted = MyUtils.sortMapByValues(related_region_counts, new IntegerMeanComparator());
 
     final List<NeighborRegion> ret = new ArrayList<NeighborRegion>();
 
@@ -307,24 +289,111 @@ public class NearestNeighbors
     return ret;
   }
 
-  private NeighborRegion find_region(final Repository repo)
+  
+
+  public NeighborRegion find_region(final Repository repo)
   {
     return training_regions.get(Repository.findRoot(repo).id);
   }
 
-  private float mean(Collection<Integer> terms)
+  public static Set<Watcher> predict(final NearestNeighbors knn, final Map<String, Map<String, Collection<Float>>> evaluations, final int k)
   {
-    if (terms.isEmpty())
+    final Set<Watcher> ret = new HashSet<Watcher>();
+
+    for (final Map.Entry<String, Map<String, Collection<Float>>> evaluation : evaluations.entrySet())
     {
+      final String user_id = evaluation.getKey();
+      final Watcher w = new Watcher(user_id);
+
+      final Map<String, Collection<Float>> distances = evaluation.getValue();
+
+      if (!distances.isEmpty())
+      {
+        final List<Map.Entry<String, Collection<Float>>> sorted = MyUtils.sortMapByValues(distances, new FloatMeanComparator());
+
+        int upperBound = distances.size() < k ? distances.size() : k;
+        for (int i = 0; i < upperBound; i++)
+        {
+          // TODO (KJM 8/10/09) Only add repo if distance is below some threshold.
+          final String repo_id = sorted.get(i).getKey();
+          w.associate(knn.training_repositories.get(repo_id));
+        }
+      }
+
+      ret.add(w);
+    }
+
+    return ret;
+  }
+
+  public static float accuracy(final Watcher actual, final Watcher predicted)
+  {
+    if ((actual == null) || (predicted == null))
+    {
+      return 0.0f;
+    }
+
+    if ((actual.repositories.isEmpty()) && (predicted.repositories.isEmpty()))
+    {
+      return 1.0f;
+    }
+
+    if ((actual.repositories.isEmpty()) && (!predicted.repositories.isEmpty()))
+    {
+      return 0.0f;
+    }
+
+    if ((actual.repositories.isEmpty()) || (predicted.repositories.isEmpty()))
+    {
+      return 0.0f;
+    }
+
+    int number_correct = CollectionUtils.intersection(actual.repositories, predicted.repositories).size();
+    int number_incorrect = CollectionUtils.subtract(predicted.repositories, actual.repositories).size();
+
+    // Rate the accuracy of the predictions, with a bias towards positive results.
+    return ((float) number_correct) / actual.repositories.size(); // - ((float) (number_incorrect) / predicted.repositories.size();
+  }
+
+  private class IntegerMeanComparator implements Comparator<Map.Entry<String, Collection<Integer>>>
+  {
+    public int compare(final Map.Entry<String, Collection<Integer>> first, final Map.Entry<String, Collection<Integer>> second)
+    {
+
+      float firstAverage = MyUtils.mean(first.getValue());
+      float secondAverage = MyUtils.mean(second.getValue());
+
+      if (secondAverage > firstAverage)
+      {
+        return 1;
+      }
+      else if (firstAverage < secondAverage)
+      {
+        return -1;
+      }
+
       return 0;
     }
+  }
 
-    int total = 0;
-    for (Integer term : terms)
+  private static class FloatMeanComparator implements Comparator<Map.Entry<String, Collection<Float>>>
+  {
+    public int compare(final Map.Entry<String, Collection<Float>> first, final Map.Entry<String, Collection<Float>> second)
     {
-      total += term.intValue();
-    }
 
-    return total / terms.size();
+      float firstAverage = MyUtils.mean(first.getValue());
+      float secondAverage = MyUtils.mean(second.getValue());
+
+      if (secondAverage > firstAverage)
+      {
+        return 1;
+      }
+      else if (firstAverage < secondAverage)
+      {
+        return -1;
+      }
+
+      return 0;
+    }
   }
 }
