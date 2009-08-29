@@ -16,7 +16,7 @@ import java.io.IOException;
  */
 public class NearestNeighbors
 {
-  public final int TOP_COMMON_WATCHERS_COUNT = 10;
+  public final int TOP_COMMON_WATCHERS_COUNT = 10 ;
   public final int TOP_REPOS_COUNT = 100;
   public final int THREAD_POOL_SIZE = 5;
 
