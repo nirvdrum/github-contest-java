@@ -1,5 +1,7 @@
 package com.github;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import java.util.Set;
 import java.util.HashSet;
 
@@ -33,6 +35,8 @@ public class NeighborRegion
 
   public void add(final Repository repo)
   {
+    repo.region = this;
+
     watchers.addAll(repo.watchers);
 
     repositories.add(repo);
@@ -49,10 +53,7 @@ public class NeighborRegion
   }
 
   public int cut_point_count(final NeighborRegion other)
-  {
-    final Set<Watcher> intersection = new HashSet<Watcher>(watchers);
-    intersection.retainAll(other.watchers);
-
-    return intersection.size();
+  { 
+    return CollectionUtils.intersection(watchers, other.watchers).size();
   }
 }

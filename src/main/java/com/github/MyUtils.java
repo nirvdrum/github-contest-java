@@ -19,6 +19,14 @@ public class MyUtils
     return sorted;
   }
 
+  public static List<Map.Entry<Watcher, Number>> sortWatcherCounts(final Map<Watcher, Number> related_region_counts, Comparator<Map.Entry<Watcher, Number>> comparator)
+  {
+    final List<Map.Entry<Watcher, Number>> sorted = new ArrayList<Map.Entry<Watcher, Number>>(related_region_counts.entrySet());
+    Collections.sort(sorted, comparator);
+
+    return sorted;
+  }
+
   public static float mean(Collection<? extends Number> terms)
   {
     if (terms.isEmpty())

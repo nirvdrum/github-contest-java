@@ -3,6 +3,7 @@ package com.github;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.io.IOException;
 
 /**
@@ -16,14 +17,14 @@ public class Main
 {
   final static Logger log = Logger.getLogger(Main.class);
 
-  public static void main(String[] args) throws IOException
+  public static void main(String[] args) throws IOException, ExecutionException, InterruptedException
   {
     log.info("Loading data.");
     final Map<String, Repository> repositories = DataLoader.loadRepositories();
     final DataSet data_set = DataLoader.loadWatchings();
 
     // Perform cross-validation.
-    final List<DataSet> folds = data_set.stratify(100000);
+    final List<DataSet> folds = data_set.stratify(1000);
     for (int i = 0; i < folds.size(); i++)
     {
       log.info(String.format("Starting fold %d.", i + 1));
@@ -41,7 +42,11 @@ public class Main
 
       analyze(test_set, training_set, prediction, all_predictions, knn, evaluations);
 
+      log.info(String.format(">>> Results for fold %d: %f%% / %f%%", i + 1, NearestNeighbors.score(test_set, prediction) * 100, NearestNeighbors.score(test_set, all_predictions) * 100));
+
       folds.add(test_set);
+
+      break;
     }
   }
 
@@ -151,7 +156,7 @@ public class Main
     for (final Watcher test_watcher : test_set.getWatchers().values())
     {
       final Watcher training_watcher = training_set.getWatchers().get(test_watcher.id);
-      if (test_watcher == null)
+      if (test_watcher == null || training_watcher == null)
       {
         continue;
       }

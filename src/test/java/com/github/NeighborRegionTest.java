@@ -135,4 +135,17 @@ public class NeighborRegionTest
     assertEquals(first.cut_point_count(second), 2);
     assertEquals(second.cut_point_count(first), 2);
   }
+
+  public void testAddAssociatesRegionWithRepository()
+  {
+    final Repository r1 = new Repository("1234", "user_a", "yo", "2009-02-26");
+    final NeighborRegion region = new NeighborRegion(r1);
+
+    assertEquals(region, r1.region);
+
+    final Repository r2 = new Repository("2345", "user_b", "yo", "2009-02-27");
+    region.add(r2);
+
+    assertEquals(region, r2.region);
+  }
 }

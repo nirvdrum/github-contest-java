@@ -20,6 +20,7 @@ public class Repository
 
   public Set<Repository> children = new HashSet<Repository>();
   public Set<Watcher> watchers = new HashSet<Watcher>();
+  public NeighborRegion region;
 
   public Repository(final String id, final String owner, final String name, final String created_at)
   {
