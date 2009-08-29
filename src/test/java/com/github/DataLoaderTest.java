@@ -2,6 +2,7 @@ package com.github;
 
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.util.*;
 import java.io.IOException;
@@ -59,16 +60,13 @@ public class DataLoaderTest
     assertEquals(DataLoader.loadWatchings().watchings, expected);
   }
 
-  /*
-  def test_load_predicting
+  public void testLoadPredictings() throws IOException
+  {
+    final Watcher w1 = new Watcher("1");
+    final Watcher w2 = new Watcher("5");
 
-    expected_data_labels = ["user_id"]
-    expected_data_items = [["1"], ["5"]]
+    final Set<Watcher> expected = new HashSet<Watcher>(Arrays.asList(w1, w2));
 
-    data_set = DataLoader.load_predictings
-
-    assert_equal expected_data_labels, data_set.data_labels
-    assert_equal expected_data_items, data_set.data_items
-  end
-   */
+    assertTrue(CollectionUtils.isEqualCollection(expected, DataLoader.loadPredictings()));
+  }
 }

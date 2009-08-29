@@ -72,19 +72,20 @@ public class NearestNeighbors
     }
   }
 
-  public Map<String, Map<String, Collection<Float>>> evaluate(final DataSet test_set) throws IOException, InterruptedException, ExecutionException
+  public Map<String, Map<String, Collection<Float>>> evaluate(final Set<Watcher> test_instances) throws IOException, InterruptedException, ExecutionException
   {
     log.info("knn-evaluate: Loading watchers.");
-    final Map<String, Watcher> test_instances = test_set.getWatchers();
 
     log.debug(String.format("knn-evaluate: Total unique test watchers: %d", test_instances.size()));
 
     final Map<String, Map<String, Collection<Float>>> results = new HashMap<String, Map<String, Collection<Float>>>();
 
+    final ExecutorService pool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+
     // For each watcher in the test set . . .
     log.info("knn-evaluate: Starting evaluations"); 
     int test_watcher_count = 0;
-    for (final Watcher watcher : test_instances.values())
+    for (final Watcher watcher : test_instances)
     {
       test_watcher_count++;
       log.info(String.format("Processing watcher (%d/%d)", test_watcher_count, test_instances.size()));
@@ -144,9 +145,6 @@ public class NearestNeighbors
       /*************************************
        **** Begin distance calculations ****
        *************************************/
-
-      final ExecutorService pool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-
       int test_region_count = 0;
 
       for (final NeighborRegion test_region : test_regions)

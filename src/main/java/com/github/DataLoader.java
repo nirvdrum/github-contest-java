@@ -89,4 +89,19 @@ public class DataLoader
 
     return ret;
   }
+
+  public static Set<Watcher> loadPredictings() throws IOException
+  {
+    final Set<Watcher> ret = new HashSet<Watcher>();
+
+    final File predictingsFile = FileUtils.toFile(DataLoader.class.getClassLoader().getResource("data/test.txt"));
+    for (final Object o : FileUtils.readLines(predictingsFile))
+    {
+      final String line = (String) o;
+
+      ret.add(new Watcher(line.trim()));
+    }
+
+    return ret;
+  }
 }

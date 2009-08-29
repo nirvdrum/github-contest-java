@@ -25,6 +25,7 @@ public class Main
     final Map<String, Repository> repositories = DataLoader.loadRepositories();
     final DataSet data_set = DataLoader.loadWatchings();
 
+    /*
     // Perform cross-validation.
     final List<DataSet> folds = data_set.stratify(1000);
     for (int i = 0; i < folds.size(); i++)
@@ -48,13 +49,60 @@ public class Main
 
       folds.add(test_set);
 
-      write_prediction(prediction);
+      write_predictions(prediction);
 
       break;
     }
+    */
+
+    log.info("Training.");
+    final NearestNeighbors knn = new NearestNeighbors(data_set);
+
+    log.info("Evaluating.");
+    final Set<Watcher> predictings = DataLoader.loadPredictings();
+    final Map<String, Map<String, Collection<Float>>> evaluations = knn.evaluate(predictings);
+    final Set<Watcher> predictions = NearestNeighbors.predict(knn, evaluations, 10);
+
+    write_predictions(predictions);
+    /*
+
+#repos_by_popularity = []
+#sorted_regions = knn.training_regions.values.sort { |x,y| y.most_popular.watchers.size <=> x.most_popular.watchers.size }
+#repos_by_popularity = sorted_regions.collect {|x| x.most_popular.id}
+#
+#$LOG.info "Printing results file."
+#File.open('results.txt', 'w') do |file|
+#
+#  predictions.each do |watcher|
+#    # Add the ten most popular repositories that the user is not already a watcher of to his repo list if
+#    # we don't have any predictions.
+#    if watcher.repositories.empty?
+#      if knn.training_watchers[watcher.id].nil?
+#        puts "No data for watcher: #{watcher.id}"
+#        repos_by_popularity[0..10].each do |repo_id|
+#          watcher.repositories << repo_id
+#        end
+#      else
+#        added_repo_count = 0
+#        repos_by_popularity.each do |suggested_repo_id|
+#          unless knn.training_watchers[watcher.id].repositories.include?(suggested_repo_id)
+#            watcher.repositories << suggested_repo_id
+#            added_repo_count += 1
+#          end
+#
+#          break if added_repo_count == 10
+#        end
+#      end
+#    end
+#
+##    $LOG.debug "Score (#{watcher.id}): #{NearestNeighbors.accuracy(knn.training_watchers[watcher.id], watcher)} -- #{watcher.to_s}"
+#    file.puts watcher.to_s
+#  end
+#end
+     */
   }
 
-  private static void write_prediction(final Set<Watcher> prediction) throws IOException
+  private static void write_predictions(final Set<Watcher> prediction) throws IOException
   {
     final FileWriter fstream = new FileWriter("/Users/nirvdrum/dev/workspaces-java/github_contest/results.txt");
     final BufferedWriter out = new BufferedWriter(fstream);
