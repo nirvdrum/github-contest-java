@@ -5,6 +5,8 @@ import org.apache.log4j.Logger;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.io.IOException;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 
 /**
  * Created by IntelliJ IDEA.
@@ -46,8 +48,23 @@ public class Main
 
       folds.add(test_set);
 
+      write_prediction(prediction);
+
       break;
     }
+  }
+
+  private static void write_prediction(final Set<Watcher> prediction) throws IOException
+  {
+    final FileWriter fstream = new FileWriter("/Users/nirvdrum/dev/workspaces-java/github_contest/results.txt");
+    final BufferedWriter out = new BufferedWriter(fstream);
+
+    for (final Watcher w : prediction)
+    {
+      out.write(w.toString() + "\n");
+    }
+
+    out.close();
   }
 
   private static void analyze(final DataSet test_set, final DataSet training_set, final Set<Watcher> prediction, final Set<Watcher> all_predictions, final NearestNeighbors knn, final Map<String, Map<String, Collection<Float>>> evaluations) throws IOException
