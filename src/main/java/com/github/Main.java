@@ -25,81 +25,126 @@ public class Main
     final Map<String, Repository> repositories = DataLoader.loadRepositories();
     final DataSet data_set = DataLoader.loadWatchings();
 
-    /*
-    // Perform cross-validation.
-    final List<DataSet> folds = data_set.stratify(1000);
-    for (int i = 0; i < folds.size(); i++)
+    if (args.length > 0)
     {
-      log.info(String.format("Starting fold %d.", i + 1));
-      final DataSet test_set = folds.remove(0);
-      final DataSet training_set = DataSet.combine(folds);
+      // Perform cross-validation.
+      final List<DataSet> folds = data_set.stratify(1000);
+      for (int i = 0; i < folds.size(); i++)
+      {
+        log.info(String.format("Starting fold %d.", i + 1));
+        final DataSet test_set = folds.remove(0);
+        final DataSet training_set = DataSet.combine(folds);
 
-      log.info("Training");
-      final NearestNeighbors knn = new NearestNeighbors(training_set);
+        log.info("Training");
+        final NearestNeighbors knn = new NearestNeighbors(training_set);
 
-      log.info("Classifying");
-      final Map<String, Map<String, Collection<Float>>> evaluations = knn.evaluate(test_set);
+        log.info("Classifying");
+        final Map<String, Map<String, Collection<Float>>> evaluations = knn.evaluate(test_set.getWatchers().values());
 
-      final Set<Watcher> prediction = NearestNeighbors.predict(knn, evaluations, 10);
-      final Set<Watcher> all_predictions = NearestNeighbors.predict(knn, evaluations, 1000);
+        final Set<Watcher> prediction = NearestNeighbors.predict(knn, evaluations, 10);
+        final Set<Watcher> all_predictions = NearestNeighbors.predict(knn, evaluations, 1000);
 
-      analyze(test_set, training_set, prediction, all_predictions, knn, evaluations);
+        analyze(test_set, training_set, prediction, all_predictions, knn, evaluations);
 
-      log.info(String.format(">>> Results for fold %d: %f%% / %f%%", i + 1, NearestNeighbors.score(test_set, prediction) * 100, NearestNeighbors.score(test_set, all_predictions) * 100));
+        log.info(String.format(">>> Results for fold %d: %f%% / %f%%", i + 1, NearestNeighbors.score(test_set, prediction) * 100, NearestNeighbors.score(test_set, all_predictions) * 100));
 
-      folds.add(test_set);
+        folds.add(test_set);
 
-      write_predictions(prediction);
+        write_predictions(prediction);
 
-      break;
+        break;
+      }
     }
-    */
 
-    log.info("Training.");
-    final NearestNeighbors knn = new NearestNeighbors(data_set);
+    else
+    {
 
-    log.info("Evaluating.");
-    final Set<Watcher> predictings = DataLoader.loadPredictings();
-    final Map<String, Map<String, Collection<Float>>> evaluations = knn.evaluate(predictings);
-    final Set<Watcher> predictions = NearestNeighbors.predict(knn, evaluations, 10);
+      log.info("Training.");
+      final NearestNeighbors knn = new NearestNeighbors(data_set);
 
-    write_predictions(predictions);
-    /*
+      log.info("Evaluating.");
+      final Set<Watcher> predictings = DataLoader.loadPredictings();
+      final Map<String, Map<String, Collection<Float>>> evaluations = knn.evaluate(predictings);
+      final Set<Watcher> predictions = NearestNeighbors.predict(knn, evaluations, 10);
 
-#repos_by_popularity = []
-#sorted_regions = knn.training_regions.values.sort { |x,y| y.most_popular.watchers.size <=> x.most_popular.watchers.size }
-#repos_by_popularity = sorted_regions.collect {|x| x.most_popular.id}
-#
-#$LOG.info "Printing results file."
-#File.open('results.txt', 'w') do |file|
-#
-#  predictions.each do |watcher|
-#    # Add the ten most popular repositories that the user is not already a watcher of to his repo list if
-#    # we don't have any predictions.
-#    if watcher.repositories.empty?
-#      if knn.training_watchers[watcher.id].nil?
-#        puts "No data for watcher: #{watcher.id}"
-#        repos_by_popularity[0..10].each do |repo_id|
-#          watcher.repositories << repo_id
-#        end
-#      else
-#        added_repo_count = 0
-#        repos_by_popularity.each do |suggested_repo_id|
-#          unless knn.training_watchers[watcher.id].repositories.include?(suggested_repo_id)
-#            watcher.repositories << suggested_repo_id
-#            added_repo_count += 1
-#          end
-#
-#          break if added_repo_count == 10
-#        end
-#      end
-#    end
-#
-##    $LOG.debug "Score (#{watcher.id}): #{NearestNeighbors.accuracy(knn.training_watchers[watcher.id], watcher)} -- #{watcher.to_s}"
-#    file.puts watcher.to_s
-#  end
-#end
-     */
+      final List<Map.Entry<String, NeighborRegion>> sorted_regions = MyUtils.sortRegionsByPopularity(knn.training_regions, new Comparator<Map.Entry<String, NeighborRegion>>(){
+
+        public int compare(final Map.Entry<String, NeighborRegion> first, final Map.Entry<String, NeighborRegion> second)
+        {
+          int firstValue = first.getValue().watchers.size();
+          int secondValue = second.getValue().watchers.size();
+
+          if (secondValue > firstValue)
+          {
+            return 1;
+          }
+          else if (firstValue < secondValue)
+          {
+            return -1;
+          }
+
+          return 0;
+        }
+      });
+
+      // Fill in repositories for any watchers with fewer than 10 repos.
+/*      log.info("Filling in repositories");
+      for (final Watcher w : predictions)
+      {
+        while (w.repositories.size() < 10)
+        {
+          for (final Map.Entry<String, NeighborRegion> pair : sorted_regions)
+          {
+            final NeighborRegion region = pair.getValue();
+            if (!region.most_forked.watchers.contains(w))
+            {
+              w.associate(region.most_forked);
+            }
+          }
+        }
+      }
+*/
+      log.info ("Printing results file.");
+      write_predictions(predictions);
+      /*
+
+ #repos_by_popularity = []
+ #sorted_regions = knn.training_regions.values.sort { |x,y| y.most_popular.watchers.size <=> x.most_popular.watchers.size }
+ #repos_by_popularity = sorted_regions.collect {|x| x.most_popular.id}
+ #
+ #$LOG.info "Printing results file."
+ #File.open('results.txt', 'w') do |file|
+ #
+ #  predictions.each do |watcher|
+ #    # Add the ten most popular repositories that the user is not already a watcher of to his repo list if
+ #    # we don't have any predictions.
+ #    if watcher.repositories.empty?
+ #      if knn.training_watchers[watcher.id].nil?
+ #        puts "No data for watcher: #{watcher.id}"
+ #        repos_by_popularity[0..10].each do |repo_id|
+ #          watcher.repositories << repo_id
+ #        end
+ #      else
+ #        added_repo_count = 0
+ #        repos_by_popularity.each do |suggested_repo_id|
+ #          unless knn.training_watchers[watcher.id].repositories.include?(suggested_repo_id)
+ #            watcher.repositories << suggested_repo_id
+ #            added_repo_count += 1
+ #          end
+ #
+ #          break if added_repo_count == 10
+ #        end
+ #      end
+ #    end
+ #
+ ##    $LOG.debug "Score (#{watcher.id}): #{NearestNeighbors.accuracy(knn.training_watchers[watcher.id], watcher)} -- #{watcher.to_s}"
+ #    file.puts watcher.to_s
+ #  end
+ #end
+      */
+    }
+
+    System.exit(0);
   }
 
   private static void write_predictions(final Set<Watcher> prediction) throws IOException
@@ -107,9 +152,14 @@ public class Main
     final FileWriter fstream = new FileWriter("/Users/nirvdrum/dev/workspaces-java/github_contest/results.txt");
     final BufferedWriter out = new BufferedWriter(fstream);
 
-    for (final Watcher w : prediction)
+    for (final Iterator<Watcher> it = prediction.iterator(); it.hasNext();)
     {
-      out.write(w.toString() + "\n");
+      out.write(it.next().toString());
+
+      if (it.hasNext())
+      {
+        out.write("\n");
+      }
     }
 
     out.close();

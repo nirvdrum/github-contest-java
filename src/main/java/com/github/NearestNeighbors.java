@@ -16,7 +16,7 @@ import java.io.IOException;
  */
 public class NearestNeighbors
 {
-  public final int TOP_COMMON_WATCHERS_COUNT = 10 ;
+  public final int TOP_COMMON_WATCHERS_COUNT = 10;
   public final int TOP_REPOS_COUNT = 100;
   public final int THREAD_POOL_SIZE = 5;
 
@@ -72,7 +72,7 @@ public class NearestNeighbors
     }
   }
 
-  public Map<String, Map<String, Collection<Float>>> evaluate(final Set<Watcher> test_instances) throws IOException, InterruptedException, ExecutionException
+  public Map<String, Map<String, Collection<Float>>> evaluate(final Collection<Watcher> test_instances) throws IOException, InterruptedException, ExecutionException
   {
     log.info("knn-evaluate: Loading watchers.");
 

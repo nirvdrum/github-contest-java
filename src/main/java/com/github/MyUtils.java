@@ -27,6 +27,14 @@ public class MyUtils
     return sorted;
   }
 
+  public static List<Map.Entry<String, NeighborRegion>> sortRegionsByPopularity(final Map<String, NeighborRegion> regions, Comparator<Map.Entry<String, NeighborRegion>> comparator)
+  {
+    final List<Map.Entry<String, NeighborRegion>> sorted = new ArrayList<Map.Entry<String, NeighborRegion>>(regions.entrySet());
+    Collections.sort(sorted, comparator);
+
+    return sorted;
+  }
+
   public static float mean(Collection<? extends Number> terms)
   {
     if (terms.isEmpty())
