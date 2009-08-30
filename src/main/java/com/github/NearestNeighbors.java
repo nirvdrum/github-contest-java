@@ -175,18 +175,21 @@ public class NearestNeighbors
         /********************************************************************
          *** Handling repositories owned by owners we're already watching ***
          ********************************************************************/
-      if (training_watcher.owner_counts.get(test_region.most_forked.owner) != null
-          && (training_watcher.owner_counts.get(test_region.most_forked.owner).floatValue() / owners_to_repositories.get(test_region.most_forked.owner).size()) > 0.25)
-        for (final Repository also_owned : owners_to_repositories.get(test_region.most_forked.owner))
-      {
+        if (training_watcher.owner_counts.get(test_region.most_forked.owner) != null
+            && (((training_watcher.owner_counts.get(test_region.most_forked.owner).floatValue() / owners_to_repositories.get(test_region.most_forked.owner).size()) > 0.25)
+              || (training_watcher.owner_distribution(test_region.most_forked.owner) > 0.25)))
         {
-          // Only add repos that are the most forked in their respective regions.
-          if (also_owned.region.most_forked.equals(also_owned))
+          for (final Repository also_owned : owners_to_repositories.get(test_region.most_forked.owner))
           {
-            repositories_to_check.add(also_owned);
+            {
+              // Only add repos that are the most forked in their respective regions.
+              if (also_owned.region.most_forked.equals(also_owned))
+              {
+                repositories_to_check.add(also_owned);
+              }
+            }
           }
         }
-      }
 
 
         for (final Repository training_repository : repositories_to_check)
