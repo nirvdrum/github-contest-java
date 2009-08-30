@@ -88,10 +88,10 @@ public class Main
       });
 
       // Fill in repositories for any watchers with fewer than 10 repos.
-/*      log.info("Filling in repositories");
+      log.info("Filling in repositories");
       for (final Watcher w : predictions)
       {
-        while (w.repositories.size() < 10)
+        if (w.repositories.size() < 10)
         {
           for (final Map.Entry<String, NeighborRegion> pair : sorted_regions)
           {
@@ -100,10 +100,15 @@ public class Main
             {
               w.associate(region.most_forked);
             }
+
+            if (w.repositories.size() == 10)
+            {
+              break;
+            }
           }
         }
       }
-*/
+
       log.info ("Printing results file.");
       write_predictions(predictions);
       /*

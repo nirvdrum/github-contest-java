@@ -175,12 +175,6 @@ public class NearestNeighbors
         /********************************************************************
          *** Handling repositories owned by owners we're already watching ***
          ********************************************************************/
-
-        if (owners_to_repositories.get(test_region.most_forked.owner).size() > 100)
-        {
-          log.info("Also owned size: " + owners_to_repositories.get(test_region.most_forked.owner).size());
-        }
-
         for (final Repository also_owned : owners_to_repositories.get(test_region.most_forked.owner))
         {
           if (also_owned.region.most_forked.equals(also_owned))
