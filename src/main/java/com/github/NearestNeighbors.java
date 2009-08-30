@@ -396,6 +396,8 @@ public class NearestNeighbors
     }
     common_watchers_repo_diversity /= common_watchers.size();
     */
+    
+    final float second_common_watchers_ratio = ((float) common_watchers.size()) / second.watchers.size();
 
     if ((first.parent != null) && first.parent.equals(second))
     {
@@ -411,7 +413,7 @@ public class NearestNeighbors
     }
     else if (first.owner.equals(second.owner))
     {
-      return 0.93f;
+      return 0.4f;
       //distance = (float) (same_owner_weight * (1.0 - (MyUtils.mean(Arrays.asList(((float)common_watchers.size()) / first.watchers.size(), ((float)common_watchers.size()) / second.watchers.size()))))
       //    * (1.0 - ((similarly_owned_count + total_watchers) / owners_to_repositories.get(first.owner).size())) + MyUtils.mean(similar_watcher_counts.values()));
     }
@@ -428,7 +430,7 @@ public class NearestNeighbors
       }
     }
 
-    return lone_repo_weight * distance;
+    return lone_repo_weight * distance * (1.0f - second_common_watchers_ratio);
 
     /*
     common_watchers_repo_diversity = common_watchers.empty? ? 1 : common_watchers.collect {|w| training_watchers[w].repositories.size}.mean
