@@ -41,8 +41,8 @@ public class Main
         log.info("Classifying");
         final Map<String, Map<String, Collection<Float>>> evaluations = knn.evaluate(test_set.getWatchers().values());
 
-        final Set<Watcher> prediction = NearestNeighbors.predict(knn, evaluations, 10);
-        final Set<Watcher> all_predictions = NearestNeighbors.predict(knn, evaluations, 1000);
+        final Set<Watcher> prediction = NearestNeighbors.predict(knn, evaluations, 10, test_set.getWatchers());
+        final Set<Watcher> all_predictions = NearestNeighbors.predict(knn, evaluations, 1000, test_set.getWatchers());
 
         analyze(test_set, training_set, prediction, all_predictions, knn, evaluations);
 
@@ -65,7 +65,7 @@ public class Main
       log.info("Evaluating.");
       final Set<Watcher> predictings = DataLoader.loadPredictings();
       final Map<String, Map<String, Collection<Float>>> evaluations = knn.evaluate(predictings);
-      final Set<Watcher> predictions = NearestNeighbors.predict(knn, evaluations, 10);
+      final Set<Watcher> predictions = NearestNeighbors.predict(knn, evaluations, 10, null);
 
       final List<Map.Entry<String, NeighborRegion>> sorted_regions = MyUtils.sortRegionsByPopularity(knn.training_regions, new Comparator<Map.Entry<String, NeighborRegion>>(){
 
@@ -238,7 +238,7 @@ public class Main
         // Let us know if we predicted a repository that isn't in the test watcher's data set.
         if (!test_set.getWatchers().get(w.id).repositories.contains(repo))
         {
-          log.info(String.format("Bad prediction %s:%s with distance %f", w.id, repo.id, MyUtils.mean(evaluations.get(w.id).get(repo.id))));
+          log.info(String.format("Bad prediction %s:%s with distance %f -- (%d watchers; %d children; has parent: %b)", w.id, repo.id, MyUtils.mean(evaluations.get(w.id).get(repo.id)), repo.watchers.size(), repo.children.size(), repo.parent == null));
         }
 
         if (training_set.getRepositories().get(repo.id) != null)
@@ -260,7 +260,7 @@ public class Main
       {
         if (test_set.getWatchers().get(w.id).repositories.contains(repo) && !watchers_to_predictions.get(w.id).repositories.contains(repo))
         {
-          log.info(String.format("Missing prediction %s:%s with distance %f", w.id, repo.id, MyUtils.mean(evaluations.get(w.id).get(repo.id))));
+          log.info(String.format("Missing prediction %s:%s with distance %f -- (%d watchers; %d children; has parent: %b)", w.id, repo.id, MyUtils.mean(evaluations.get(w.id).get(repo.id)), repo.watchers.size(), repo.children.size(), repo.parent == null));
         }
       }
     }

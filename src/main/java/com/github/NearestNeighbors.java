@@ -175,13 +175,18 @@ public class NearestNeighbors
         /********************************************************************
          *** Handling repositories owned by owners we're already watching ***
          ********************************************************************/
+      if (training_watcher.owner_counts.get(test_region.most_forked.owner) != null
+          && (training_watcher.owner_counts.get(test_region.most_forked.owner).floatValue() / owners_to_repositories.get(test_region.most_forked.owner).size()) > 0.25)
         for (final Repository also_owned : owners_to_repositories.get(test_region.most_forked.owner))
+      {
         {
+          // Only add repos that are the most forked in their respective regions.
           if (also_owned.region.most_forked.equals(also_owned))
           {
             repositories_to_check.add(also_owned);
           }
         }
+      }
 
 
         for (final Repository training_repository : repositories_to_check)
@@ -348,6 +353,7 @@ public class NearestNeighbors
 
     // Penalize repositories that have no parent nor children.
     final float lone_repo_weight = (first.parent == null && first.children.isEmpty()) || (second.parent == null && second.children.isEmpty()) ? 2.0f : 1.0f;
+    final float leaf_repo_weight = second.children.isEmpty() ? 1.0f : 1.0f;
 
     /*
     // Figure out how many repositories the common watchers have in common with the test watcher.
@@ -396,24 +402,25 @@ public class NearestNeighbors
     }
     common_watchers_repo_diversity /= common_watchers.size();
     */
-    
+
+    final float first_common_watchers_ratio = ((float) common_watchers.size()) / first.watchers.size();
     final float second_common_watchers_ratio = ((float) common_watchers.size()) / second.watchers.size();
 
     if ((first.parent != null) && first.parent.equals(second))
     {
-      return 0.9f;
+      distance = 0.9f;
       //distance = (float) (parent_child_weight * (1.0 - (((float)common_watchers.size()) / MyUtils.mean(Arrays.asList(first.watchers.size(), second.watchers.size()))))
       //    * (1.0 - ((similarly_owned_count + total_watchers) / Math.max(owners_to_repositories.get(first.owner).size(), 1))) + MyUtils.mean(similar_watcher_counts.values()));
     }
     else if (first.isRelated(second))
     {
-      return 0.5f;
+      distance = 0.5f;
       //distance = (float) (related_weight * (1.0 - (common_watchers.size() / MyUtils.mean(Arrays.asList(first.watchers.size(), second.watchers.size()))))
       //    - ((common_watchers.size() / common_watchers_repo_diversity) / MyUtils.mean(Arrays.asList(first.watchers.size(), second.watchers.size()))));
     }
     else if (first.owner.equals(second.owner))
     {
-      return 0.4f;
+      distance = 0.4f * (1.0f - training_watcher.owner_distribution(second.owner)) / Math.max(1.0f, second.children.size());
       //distance = (float) (same_owner_weight * (1.0 - (MyUtils.mean(Arrays.asList(((float)common_watchers.size()) / first.watchers.size(), ((float)common_watchers.size()) / second.watchers.size()))))
       //    * (1.0 - ((similarly_owned_count + total_watchers) / owners_to_repositories.get(first.owner).size())) + MyUtils.mean(similar_watcher_counts.values()));
     }
@@ -421,7 +428,7 @@ public class NearestNeighbors
     {
       if (!common_watchers.isEmpty())
       {
-        return 0.7f;
+        distance = 0.7f;
         //final float first_common_watchers_ratio = ((float) common_watchers.size()) / first.watchers.size();
         //final float second_common_watchers_ratio = ((float) common_watchers.size()) / second.watchers.size();
 
@@ -430,14 +437,11 @@ public class NearestNeighbors
       }
     }
 
-    return lone_repo_weight * distance * (1.0f - second_common_watchers_ratio);
+    int divisor = second.children.isEmpty() ? 1 : second.children.size();
+    return (leaf_repo_weight * lone_repo_weight * distance);// - MyUtils.mean(Arrays.asList(first_common_watchers_ratio, second_common_watchers_ratio));
 
     /*
     common_watchers_repo_diversity = common_watchers.empty? ? 1 : common_watchers.collect {|w| training_watchers[w].repositories.size}.mean
-
-
- #   @@comparisons[second.id] ||= {}
- #   @@comparisons[second.id][first.id] = distance
 
     distance
 
@@ -523,7 +527,7 @@ public class NearestNeighbors
    * @param k
    * @return
    */
-  public static Set<Watcher> predict(final NearestNeighbors knn, final Map<String, Map<String, Collection<Float>>> evaluations, final int k)
+  public static Set<Watcher> predict(final NearestNeighbors knn, final Map<String, Map<String, Collection<Float>>> evaluations, final int k, final Map<String, Watcher> test_data)
   {
     final Set<Watcher> ret = new HashSet<Watcher>();
 
@@ -536,6 +540,8 @@ public class NearestNeighbors
 
       if (!distances.isEmpty())
       {
+        final Watcher training_watcher = knn.training_watchers.get(user_id);
+
         final List<Map.Entry<String, Collection<Float>>> sorted = MyUtils.sortMapByValues(distances, new FloatMeanComparator());
 
         int upperBound = distances.size() < k ? distances.size() : k;
@@ -543,7 +549,15 @@ public class NearestNeighbors
         {
           // TODO (KJM 8/10/09) Only add repo if distance is below some threshold.
           final String repo_id = sorted.get(i).getKey();
-          w.associate(knn.training_repositories.get(repo_id));
+          final Repository repo = knn.training_repositories.get(repo_id);
+          w.associate(repo);
+
+          // Make sure the predicted watcher follows the same distribution as the training watcher.
+          //final float normalize_factor = ((float) k) / training_watcher.repositories.size();
+          //if ((w.owner_counts.get(repo.owner).floatValue() / training_watcher.repositories.size()) / normalize_factor < training_watcher.owner_distribution(repo.owner))
+          //{
+          //  w.repositories.remove(repo);
+         // }
         }
       }
 
@@ -632,7 +646,7 @@ public class NearestNeighbors
       {
         return 1;
       }
-      else if (firstAverage < secondAverage)
+      else if (secondAverage < firstAverage)
       {
         return -1;
       }
@@ -649,13 +663,13 @@ public class NearestNeighbors
       float firstAverage = MyUtils.mean(first.getValue());
       float secondAverage = MyUtils.mean(second.getValue());
 
-      if (secondAverage > firstAverage)
-      {
-        return 1;
-      }
-      else if (firstAverage < secondAverage)
+      if (firstAverage < secondAverage)
       {
         return -1;
+      }
+      else if (firstAverage > secondAverage)
+      {
+        return 1;
       }
 
       return 0;
@@ -673,7 +687,7 @@ public class NearestNeighbors
       {
         return 1;
       }
-      else if (firstValue < secondValue)
+      else if (secondValue < firstValue)
       {
         return -1;
       }

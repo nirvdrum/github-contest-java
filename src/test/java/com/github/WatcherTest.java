@@ -71,4 +71,21 @@ public class WatcherTest
     assertEquals(Arrays.asList(repo), watcher.repositories);
     assertEquals(Arrays.asList(watcher), repo.watchers);
   }
+
+  public void test_owner_distributions()
+  {
+    // Only one repo, so distribution should be 1.0.
+    final Repository r1 = new Repository("1234", "user_a", "yo", "2009-02-26");
+    watcher.associate(r1);
+    assertEquals(1.0f, watcher.owner_distribution(r1.owner));
+
+    // Add in another repo by another owner.  Both should now be evenly distributed.
+    final Repository r2 = new Repository("2345", "user_b", "hey", "2009-03-31");
+    watcher.associate(r2);
+    assertEquals(0.5f, watcher.owner_distribution(r1.owner));
+    assertEquals(0.5f, watcher.owner_distribution(r2.owner));
+
+    // An owner that isn't in the set should always be 0.0
+    assertEquals(0.0f, watcher.owner_distribution("oarceihlaoei"));
+  }
 }

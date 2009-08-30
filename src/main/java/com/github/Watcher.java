@@ -2,6 +2,8 @@ package com.github;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -15,6 +17,8 @@ public class Watcher
   public final String id;
 
   public Set<Repository> repositories = new HashSet<Repository>();
+
+  public final Map<String, Integer> owner_counts = new HashMap<String, Integer>();
 
   public Watcher(final String id)
   {
@@ -73,5 +77,22 @@ public class Watcher
     repositories.add(repo);
 
     repo.watchers.add(this);
+
+    // Take care of the owner counts.
+    if (owner_counts.get(repo.owner) == null)
+    {
+      owner_counts.put(repo.owner, new Integer(0));
+    }
+    owner_counts.put(repo.owner, new Integer(owner_counts.get(repo.owner).intValue() + 1));
+  }
+
+  public float owner_distribution(final String owner)
+  {
+    if (owner_counts.get(owner) == null)
+    {
+      return 0.0f;
+    }
+
+    return owner_counts.get(owner).floatValue() / repositories.size();
   }
 }
