@@ -3,7 +3,7 @@ Overview:
 
 This is my second submission to the GitHub contest.  My initial approach was in Ruby and I found it too slow to be usable.  This project
 is mostly a port to Java and performs considerably better.  Since it is a port and I was short of time, the variable naming convention
-often uses underscores rather than camel-casing.  The code is fairly clean, but not the best structured Java app by any stretch of the
+often uses underscores rather than camel-casing.  The code is fairly clean, but not the best structured Java application by any stretch of the
 imagination.
 
 Running:
