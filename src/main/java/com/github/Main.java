@@ -28,7 +28,7 @@ public class Main
     if (args.length > 0)
     {
       // Perform cross-validation.
-      final List<DataSet> folds = data_set.stratify(1000);
+      final List<DataSet> folds = data_set.stratify(10);
       for (int i = 0; i < folds.size(); i++)
       {
         log.info(String.format("Starting fold %d.", i + 1));
@@ -51,8 +51,6 @@ public class Main
         folds.add(test_set);
 
         write_predictions(prediction);
-
-        break;
       }
     }
 
