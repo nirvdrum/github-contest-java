@@ -154,7 +154,7 @@ public class Main
 
   private static void write_predictions(final Set<Watcher> prediction) throws IOException
   {
-    final FileWriter fstream = new FileWriter("/Users/nirvdrum/dev/workspaces-java/github_contest/results.txt");
+    final FileWriter fstream = new FileWriter("results.txt");
     final BufferedWriter out = new BufferedWriter(fstream);
 
     for (final Iterator<Watcher> it = prediction.iterator(); it.hasNext();)
