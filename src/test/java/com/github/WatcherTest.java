@@ -44,7 +44,7 @@ public class WatcherTest
     assertEquals("1:1234", watcher.toString());
 
     watcher.repositories.add(two);
-    assertEquals("1:2345,1234", watcher.toString());
+    assertTrue(watcher.toString().equals("1:2345,1234") || watcher.toString().equals("1:1234,2345"));
   }
 
   public void test_equality()

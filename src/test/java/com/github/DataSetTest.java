@@ -51,17 +51,17 @@ public class DataSetTest
     data_set.add(new Watching("c", "1"));
 
     final DataSet expected_first_fold = new DataSet();
-    expected_first_fold.add(new Watching("c", "1"));
+    expected_first_fold.add(new Watching("b", "1"));
     expected_first_fold.add(new Watching("a", "2"));
     expected_first_fold.add(new Watching("f", "5"));
 
     final DataSet expected_second_fold = new DataSet();
-    expected_second_fold.add(new Watching("b", "1"));
+    expected_second_fold.add(new Watching("a", "1"));
     expected_second_fold.add(new Watching("d", "3"));
     expected_second_fold.add(new Watching("q", "6"));
 
     final DataSet expected_third_fold = new DataSet();
-    expected_third_fold.add(new Watching("a", "1"));
+    expected_third_fold.add(new Watching("c", "1"));
     expected_third_fold.add(new Watching("e", "4"));
     expected_third_fold.add(new Watching("r", "7"));
 
