@@ -1,6 +1,7 @@
 package com.github;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -24,8 +25,7 @@ public class DataLoader
     final Map<String, String> relationships = new HashMap<String, String>();
 
     // First, discover all the repositories.
-    final File repoFile = FileUtils.toFile(DataLoader.class.getClassLoader().getResource("data/repos.txt"));
-    for (final Object o : FileUtils.readLines(repoFile))
+    for (final Object o : IOUtils.readLines(DataLoader.class.getClassLoader().getResourceAsStream("data/repos.txt")))
     {
       final String line = (String) o;
 
@@ -55,8 +55,7 @@ public class DataLoader
     }
 
     final Map<String, Watcher> watchers = new HashMap<String, Watcher>();
-    final File watchingsFile = FileUtils.toFile(DataLoader.class.getClassLoader().getResource("data/data.txt"));
-    for (final Object o : FileUtils.readLines(watchingsFile))
+    for (final Object o : IOUtils.readLines(DataLoader.class.getClassLoader().getResourceAsStream("data/data.txt")))
     {
       final String line = (String) o;
 
@@ -75,8 +74,7 @@ public class DataLoader
   {
     final DataSet ret = new DataSet();
 
-    final File watchingsFile = FileUtils.toFile(DataLoader.class.getClassLoader().getResource("data/data.txt"));
-    for (final Object o : FileUtils.readLines(watchingsFile))
+    for (final Object o : IOUtils.readLines(DataLoader.class.getClassLoader().getResourceAsStream("data/data.txt")))
     {
       final String line = (String) o;
 
@@ -94,8 +92,7 @@ public class DataLoader
   {
     final Set<Watcher> ret = new HashSet<Watcher>();
 
-    final File predictingsFile = FileUtils.toFile(DataLoader.class.getClassLoader().getResource("data/test.txt"));
-    for (final Object o : FileUtils.readLines(predictingsFile))
+    for (final Object o : IOUtils.readLines(DataLoader.class.getClassLoader().getResourceAsStream("data/test.txt")))
     {
       final String line = (String) o;
 
