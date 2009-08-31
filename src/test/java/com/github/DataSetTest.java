@@ -65,9 +65,29 @@ public class DataSetTest
     expected_third_fold.add(new Watching("e", "4"));
     expected_third_fold.add(new Watching("r", "7"));
 
-    final List<DataSet> folds = data_set.stratify(3);
+    final List<DataSet> expected = Arrays.asList(expected_first_fold, expected_second_fold, expected_third_fold);
+    final List<DataSet> actual = data_set.stratify(3);
 
-    assertEquals(folds, Arrays.asList(expected_first_fold, expected_second_fold, expected_third_fold));
+    assertEquals(actual.size(), expected.size());
+
+    // We don't care how the watchers get split, only that the class values are distributed properly.
+    for (int i = 0; i < expected.size(); i++)
+    {
+      final Set<String> expected_classes = new HashSet<String>();
+      final Set<String> actual_classes = new HashSet<String>();
+
+      for (final Watching w : expected.get(i).watchings)
+      {
+        expected_classes.add(w.repository_id);
+      }
+
+      for (final Watching w : actual.get(i).watchings)
+      {
+        actual_classes.add(w.repository_id);
+      }
+
+      assertEquals(actual_classes, expected_classes);
+    }
   }
 
   public void testCombine()
