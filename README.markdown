@@ -6,6 +6,8 @@ is mostly a port to Java and performs considerably better.  Since it is a port a
 often uses underscores rather than camel-casing.  The code is fairly clean, but not the best structured Java application by any stretch of the
 imagination.
 
+For more details on the algorithm used, please ready my [write-up](http://nirvdrum.com/2009/09/03/github-contest-recap.html).
+
 Running:
 -------
 
